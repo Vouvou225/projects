@@ -1,0 +1,203 @@
+---
+title: "Data mining project"
+author: "Nomel Esso"
+date: "4/2/2021"
+output: html_document
+---
+
+1- Introduction
+
+I am exciting about working on this project for the following reasons. First, I would love to be a data scientist in the near future. On the other hand, this project helps me put myself into an employer's perspective. With that being said, I would not want to invest energy and time to hire someone who is going to leave the company in a short period of time . This project helps the company in terms of cost and time efficiency by predicting the probability of a candidate will work for the company . This trained dataset is called HR Analytics: Job Change of Data Scientists and it has 19133 observations and 12 variables .
+
+
+2- Methodology
+
+I would import the data from excel. Before starting working on anything, I would tell r that some of my variables are categorical then clean the dataset and get rid of the "NA", "blank rows", ">4" and so on. First, I would train and test my data . After doing so, I would create some arbitrary requirements that a candidate needs to meet in order to be hired by the company. After being Hired, I would create a new data set that would only include the hired candidates and work with this new data set . My methods to analyze the data are logistic regression,tree method, random forests and support vector machine(linear and radial) . The similarity among my methods used is that they are all efficient when it is about predicting a categorical variable .
+
+3- Results
+
+a- categorical variables
+
+I would use as.factor to let r know that the following variables should be treated as categorical variables .
+
+```{r}
+training <- read.csv("aug_train.csv")
+
+training$last_new_job <- as.factor(training$last_new_job)
+training$gender <- as.factor(training$gender)
+training$relevent_experience <- as.factor(training$relevent_experience)
+training$enrolled_university <- as.factor(training$enrolled_university)
+training$education_level <- as.factor(training$education_level)
+training$major_discipline <- as.factor(training$major_discipline)
+training$target <- as.factor(training$target)
+```
+
+b- cleaning
+
+-last_new_job variable has some value like "never" ">4" ">20" that prevents r to operates as i want it to so I would convert those following into some specific values . "never" would become 0 and ">4" would become "5". Also, training, and last_new_job variables had some "NA" values in it, so I would tell r to remove the "NA" by using na.omit . Experience has also some values like ">20", "<1". I would convert those values into "21" and "0" respectively . The gender, education level, discipline, training, and enrolled_university variables has some blank spaces. I would tell r to remove those rows that have blank space .
+
+
+```{r}
+library(dplyr)
+library(tidyr)
+training$gender <- as.factor(training$gender)
+training$last_new_job[training$last_new_job == "never"] <- "0"
+training$last_new_job[training$last_new_job == ">4"] <- "5"
+training$experience[training$experience == ">20"] <- "21"
+training$experience[training$experience == "<1"] <- "0"
+str(training$education_level)
+training <- training[!(training$gender == ""), ]
+training <- training[!(training$education_level == ""), ]
+training <- training[!(training$major_discipline == ""), ]
+training <- training[!(training$enrolled_university == ""), ]
+training <- training[!(training$last_new_job == ""), ]
+na.omit(training$last_new_job)
+training <- na.omit(training)
+training <- training[!(training== ""), ]
+```
+
+c- training and testing
+
+I would train the data. This dataset has 8780 observations. I would train 5000 observations, and the remaining would be tested .
+
+```{r}
+
+train <-  sample(1:8780,5000)  
+
+train_training <- training[train, ] 
+test_training <- training[-train, ]
+```
+
+d- criteria to be hired
+
+I was thinking about randomly creating some criteria(requirements) for a company to hire a candidate based on some variables such as prior experience, education and else. This following line of code would tell you that the candidate would get hired if : he is a master degree with no relevant experience, he is a graduate with some relevant experience, or he is not enrolled in college but has relevant experience and 5 years of experience
+
+The "hired" variable only considers people that have been hired based on the "criteria" .
+
+```{r}
+criteria <- ifelse((training$education_level == "Masters" & training$relevent_experience == "No relevent experience" & training$experience == "0" | training$education_level == "Graduate" & training$relevent_experience == "Has relevent experience" | training$enrolled_university == "no_enrollment" & training$relevent_experience == "Has relevent experience" & training$experience == "5"), "Hired", "Not Hired")
+training$criteria <- as.factor(criteria)
+Hired <- criteria[criteria == "Hired"]
+```
+
+e- new dataset
+
+I would like to create a new dataset that will consider only the candidate that will be hired . I will train and test the new dataset . I will remove city and last_new_job because of the length of the vectors, r encounters a lot of errors .
+
+```{r}
+new_training <- data.frame(training)[training$criteria == "Hired",]
+new_training <- na.omit(new_training)
+
+train2 <-  sample(1:5228,3000)  
+
+train_training2 <- new_training[train2, ] 
+test_training2 <- new_training[-train2, ]
+
+```
+
+f- categorical variables
+
+I would use as,factor to let r know that the following variables should be treated as categorical variables .
+
+```{r}
+new_training$last_new_job <- as.factor(new_training$last_new_job)
+new_training$gender <- as.factor(new_training$gender)
+new_training$relevent_experience <- as.factor(new_training$relevent_experience)
+new_training$enrolled_university <- as.factor(new_training$enrolled_university)
+new_training$education_level <- as.factor(new_training$education_level)
+new_training$major_discipline <- as.factor(new_training$major_discipline)
+new_training$target <- as.factor(new_training$target)
+
+```
+
+g- logistic regression
+
+I will be using logistic regression to predict the candidates that will be look for a new job or not. I created a new data frame for the testing because in my train variable, there is no Phd but there is one in the test variable. In order for my predictions to work, I decided to delete the phd variable from my test variable . I will then create a confusion matrix to have a better view at the results.
+
+```{r}
+library(glmnet)
+test_training2 <- data.frame(test_training2)[test_training2$education_level != "Phd",]
+fit <- glm(target ~., data = train_training2[,-c(2,13)], family= binomial)
+summary(fit)
+prob <- predict(fit,test_training2,type = "response")
+distribution <- table(new_training$target,new_training$criteria)
+distribution
+```
+
+We can understand that among the hired candidates, 1194(22.84%) are looking for a job change compared to 4037(77.16%) candidates who will stay in the specific job field . 
+
+
+
+
+I will try to use some methods such as random forests, tree method or support vector machine to predict the candidates that will be hired or not.Then, I would conclude what model had the best performance looking at the results . At the end of each model, I will create a confusion matrix then I will calculate the misclassification rate error which will help me determine what model best predicted my response variable target .
+
+h - Random Forest
+
+I would use random forest to construct more powerful and accurate predictions .
+
+```{r}
+library(randomForest)
+set.seed(1)
+bag1 <- randomForest(target ~ ., data = train_training2[,-c(2,10)], mtry = 10, importance = TRUE)
+predbag1 <- predict(bag1, test_training2)
+summary(bag1)
+tab1 <- table(predbag1, test_training2$target)
+tab1
+misclassification_rate1 <- 100 * ((tab1[1,2] + tab1[2,1]) / (tab1[1,1] + tab1[1,2] + tab1[2,1] + tab1[2,2]))
+misclassification_rate1
+```
+
+
+
+i - tree method
+
+I would use classification tree to predict each observation of target belongs to the class of training observations to which it belongs .
+
+```{r}
+library(tree)
+
+fitTree <- tree(target ~ ., data = train_training2[,-c(2,10)])
+summary(fitTree)
+```
+
+Misclassification error rate: 19.37% .
+
+j - SVMS models 
+
+I would use some SVMs models to predict target .
+
+a- linear 
+
+```{r}
+library(e1071)
+set.seed(1)
+svmFull <- svm(target ~ ., data = train_training2[,-c(2,10)], kernel = "linear", cost = 1, scale = FALSE)
+summary(svmFull)
+colnames(test_training2) == colnames(train_training2)
+fullPred <- predict(svmFull, test_training2)
+tab2 <- table(fullPred, test_training2$target)
+tab2
+misclassification_rate2 <- 100 * ((tab2[1,2] + tab2[2,1]) / (tab2[1,1] + tab2[1,2] + tab2[2,1] + tab2[2,2]))
+misclassification_rate2
+```
+
+
+
+b- radial
+
+```{r}
+set.seed(1)
+svmRad1 <- svm(target ~ ., data = train_training2[,-c(2,10)], kernel = "radial", cost = 1, scale = FALSE)
+summary(svmRad1)
+radPred1 <- predict(svmRad1, test_training2)
+tab3 <- table(radPred1, test_training2$target)
+tab3
+misclassification_rate3 <- 100 * ((tab3[1,2] + tab3[2,1]) / (tab3[1,1] + tab3[1,2] + tab3[2,1] + tab3[2,2]))
+misclassification_rate3
+```
+
+
+
+4- Discussion
+
+to sum up, those techniques were the more appropriate for my classification problem. Tree method is the best model to predict if the candidates will look for another job or not after being hired with about 19% as the lowest misclassification rate. If I were to redo this project, I would have tried to pick a dataset with less categorical variables and less levels . But having the exact same dataset, I would have tried to find a way to use discriminant analysis such as lda or qda to see how good they would have predicted the model .
