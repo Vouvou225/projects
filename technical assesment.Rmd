@@ -1,0 +1,183 @@
+---
+title: "Technical Assesment"
+author: "Nomel Esso"
+date: "8/20/2022"
+output: pdf_document
+---
+
+```{r}
+#install.packages("readr")
+#install.packages("tydiverse")
+#library(readr)
+#library(tydiverse)
+dat <- read.csv("shots_data.csv")
+
+```
+Let us divide the data set into two teams : team A and Team B
+
+```{r}
+dat_A <- subset(dat, dat[1] == "Team A")
+dat_B <- subset(dat, dat[1] == "Team B")
+```
+
+
+
+I would like to categorize the data set into 3 categories : corner 3s , non corner 3s, and 2 points based on the respective teams. 
+
+##Team A
+
+```{r}
+Corner_A <- subset(dat_A, dat_A[3] <= 7.8 
+& (dat_A[2] < -22 | dat_A[2] > 22))
+
+two_point_A <- subset(dat_A, (dat_A[3] <= 23.75 
+& dat_A[2] >= -22)&(dat_A[3] <= 23.75 & dat_A[2] <= 22))
+
+Non_Corner_A <- subset(dat_A, (dat_A[3] > 7.8
+& (dat_A[2] < -22 | dat_A[2] > 22)) | (dat_A[3] > 23.75 
+& (dat_A[2] > -22 | dat_A[2] < 22)))
+
+```
+
+##Team B
+
+```{r}
+Corner_B <- subset(dat_B, dat_B[3] <= 7.8 & 
+(dat_B[2] < -22 | dat_B[2] > 22))
+
+two_point_B <- subset(dat_B, (dat_B[3] <= 23.75
+& dat_B[2] >= -22)&(dat_B[3] <= 23.75 & dat_B[2] <= 22))
+
+Non_Corner_B <- subset(dat_B, (dat_B[3] > 7.8 
+& (dat_B[2] < -22 | dat_B[2] > 22)) | (dat_B[3] > 23.75 
+& (dat_B[2] > -22 | dat_B[2] < 22)))
+```
+
+## Field Goals made And Field Goal Attempted
+
+## Corner 3s FGM and FGA for each Team
+
+```{r}
+# TEAM A
+Corner_A_FGM <- subset(Corner_A, Corner_A[4] == 1)
+Corner_A_FGM <- sum(Corner_A_FGM[4])
+Corner_A_FGA <- 18
+
+sum(dat_A[4]==1) + sum(dat_A[4]==0)
+# TEAM B
+Corner_B_FGM <- subset(Corner_B, Corner_B[4] == 1)
+Corner_B_FGM <- sum(Corner_B_FGM[4])
+Corner_B_FGA <- 11
+```
+
+## Non Corner 3s FGM and FGA for each Team
+
+```{r}
+# TEAM A
+Non_Corner_A_FGM <- subset(Non_Corner_A, Non_Corner_A[4] == 1)
+Non_Corner_A_FGM <- sum(Non_Corner_A_FGM[4])
+Non_Corner_A_FGA <- 30
+
+# TEAM B
+Non_Corner_B_FGM <- subset(Non_Corner_B, Non_Corner_B[4] == 1)
+Non_Corner_B_FGM <- sum(Non_Corner_B_FGM[4])
+Non_Corner_B_FGA <- 32
+```
+## two point FGM and FGA for each Team
+
+```{r}
+# TEAM A
+two_point_A_FGM <- subset(two_point_A, two_point_A[4] == 1)
+two_point_A_FGM <- sum(two_point_A_FGM[4])
+two_point_A_FGA <- 232
+
+# TEAM B
+two_point_B_FGM <- subset(two_point_B, two_point_B[4] == 1)
+two_point_B_FGM <- sum(two_point_B_FGM[4])
+two_point_B_FGA <- 181
+```
+
+
+## Effective Field Goal Percentage of Team shots within the zone
+
+```{r}
+# TEAM A
+Corner_A_eFG <- Corner_A_FGM /Corner_A_FGA
+Non_Corner_A_eFG <- Non_Corner_A_FGM /Non_Corner_A_FGA
+two_point_A_eFG <- two_point_A_FGM/two_point_A_FGA
+
+
+# TEAM B
+Corner_B_eFG <- Corner_B_FGM/Corner_B_FGA
+Non_Corner_B_eFG <- Non_Corner_B_FGM /Non_Corner_B_FGA
+two_point_B_eFG <-two_point_B_FGM/two_point_B_FGA
+
+#TEAM EFGs
+
+Team_A_eFG <- (((Corner_A_FGM+Non_Corner_A_FGM+two_point_A_FGM)
++ 0.5*
+(Corner_A_FGM+Non_Corner_A_FGM))
+/280)*100
+
+Team_B_eFG <- (((Corner_B_FGM+Non_Corner_B_FGM+two_point_B_FGM) 
++0.5*
+(Corner_B_FGM+Non_Corner_B_FGM))
+/224)*100
+
+```
+
+
+Team A Effective Percentage Shot within a Zone:
+
+Corner 3: 0.500
+
+Non_Corner 3: 0.266
+
+Two Point  : 0.466
+
+Team A eFG is 47.68%
+
+Team B Effective Percentage Shot within a Zone:
+
+Corner 3: 0.364
+
+Non_Corner 3: 0.
+
+Two Point  : 0.448
+
+Team B eFG is 43.53%
+
+
+
+
+## Shot Distribution
+
+```{r}
+# TEAM A
+Corner_A_FGA/280
+Non_Corner_A_FGA/280
+two_point_A_FGA/280
+
+# TEAM B
+Corner_B_FGA/224
+Non_Corner_B_FGA/224
+two_point_B_FGA/224
+```
+
+Team A Shot distribution:
+
+Corner 3: 0.064
+
+Non_Corner 3: 0.107
+
+Two Point  : 0.829
+
+
+Team B Shot distribution:
+
+Corner 3: 0.049
+
+Non_Corner 3: 0.143
+
+Two Point  : 0.808
+
